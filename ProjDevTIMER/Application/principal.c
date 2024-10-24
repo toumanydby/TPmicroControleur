@@ -1,81 +1,44 @@
 #include "stm32f10x.h"
 #include "GPIO.h"
+#include "TIMER.h"
 
+void Callback(void){
+		GPIOA->ODR ^= GPIO_ODR_ODR0;  // Toggle la broche PA0
+	}
 
-ourGPIO_struct btnPoussoir;
-ourGPIO_struct led;
-
-void testGPIO(){
-	ourGPIO_struct gpioA;
-	ourGPIO_struct gpioB;
-	ourGPIO_struct gpioC;
-	ourGPIO_struct gpioD;
-	
-	gpioA.GPIO = GPIOB;
-	gpioA.GPIO_pin = 0;
-	gpioA.GPIO_conf = in_Floating;
-	
-	gpioB.GPIO = GPIOA;
-	gpioB.GPIO_pin = 7;
-	gpioB.GPIO_conf = in_PullDown;
-	
-	gpioC.GPIO = GPIOA;
-	gpioC.GPIO_pin = 15;
-	gpioC.GPIO_conf = in_PullUp;
-	
-	gpioD.GPIO = GPIOB;
-	gpioD.GPIO_pin = 4;
-	gpioD.GPIO_conf = in_Analog;
-	
-	ourGPIO_Init(&gpioA);
-	ourGPIO_Init(&gpioB);
-	ourGPIO_Init(&gpioC);
-	ourGPIO_Init(&gpioD);
-
-}
 int main ( void )
 {
-	
-		//User button -->	PC13 
-	//User LD2: the green LED is connected to PA5 (pin 21) or PB13 (pin 34)
-//	GPIOA->CRL &= ~(0xF) ;										
-//	GPIOA->CRL |= (0x1) ;
+	//RCC->APB1ENR |= RCC_APB1ENR_TIM2EN;
+	//TIM2->PSC |= 36000 ;
+	//TIM2->ARR |= 1000 ;
 
-//	//configuration bouton poussoir pull down
-//	GPIOC->CRH &= ~(0xF) ; //Effacer les bits de configuration
-//	GPIOC->CRH |= (0x4) ;
+	ourGPIO_struct ledTest;
 	
-	//	do 
-//	{
-//		//lire l'etat du bouton poussoir PC8
-//		if ((GPIOC->IDR & (1 << 8) )==0) {
-//            // Si bouton appuyé, allumer la LED (PA0)
-//            GPIOA->BSRR = (1 << 0);  // Mettre PA0 à HIGH
-//        } else {
-//            // Si bouton relâché, éteindre la LED
-//            GPIOA->BRR = (1 << 0);   // Mettre PA0 à LOW
-//        }					
-//	} while (1);
+	ledTest.GPIO = GPIOA;
+	ledTest.GPIO_pin = 0;
+	ledTest.GPIO_conf = out_Ppull;
 	
-	//testGPIO();
+	ourGPIO_Init(&ledTest);
 	
-	btnPoussoir.GPIO = GPIOC;
-  btnPoussoir.GPIO_pin = 8;
-  btnPoussoir.GPIO_conf = in_PullDown;
+	MyTimer_Struct_TypeDef Timer2_500ms;
+	Timer2_500ms.Timer = TIM2;
+	Timer2_500ms.ARR = 1000;
+	Timer2_500ms.PSC = 36000;
+	MyTimer_Base_Init(&Timer2_500ms);
+	MyTimer_Base_Start(TIM2);
+	MyTimer_ActiveIT(TIM2,2,Callback);
+	/*
+	Periode_Timer = ARR * Periode_Compteur
+	Periode_Compteur = PSC * Periode_PSC
+	Donc Periode_Timer = ARR * PSC * Periode_PSC
 
-	led.GPIO = GPIOA;
-	led.GPIO_pin = 0;
-	led.GPIO_conf = out_Ppull;
+	On a Frequence_PSC = 72e6 Hz
+	Donc Periode_PSC = 1/(72e6) s
 	
-	ourGPIO_Init( &btnPoussoir);			
-	ourGPIO_Init( &led);
+	On veut Periode_Timer = 500 ms
+	Donc ARR*PSC = 36e6
+	Une solution possible : (ARR;PSC) = (1000;36000)
+	*/
 	
-	do{
-			if(ourGPIO_Read( &btnPoussoir,btnPoussoir.GPIO_pin)){
-				ourGPIO_Set(&led,led.GPIO_pin);
-			} else{
-				ourGPIO_Reset(&led,led.GPIO_pin);
-			}
-	}while(1);	
+	//0xA2C8 = 1010 0010 1100 1000
 }
-

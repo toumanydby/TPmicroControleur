@@ -44,7 +44,7 @@ void ourGPIO_Init( ourGPIO_struct * GPIOStructPtr){
 
 /**
 * Ici on cherche a lire l'etat input de notre GPIO, donc ce qu'il faut faire c'est comparé la valeur du GPIO a la bonne broche 
-* a 1 decale de la valeur de la pin
+* a la valeur de 1 decale de la valeur de la pin
 *
 */
 int ourGPIO_Read( ourGPIO_struct * GPIOStructPtr, char GPIO_pin ){
@@ -54,15 +54,24 @@ int ourGPIO_Read( ourGPIO_struct * GPIOStructPtr, char GPIO_pin ){
 	return 0;
 }
 
+/**
+* On cherche a mettre a jour la valeur du GPIO sur la bonne pin donc on utilise le registre BSRR
+*/
 void ourGPIO_Set(ourGPIO_struct * GPIOStructPtr, char GPIO_pin){
 	GPIOStructPtr->GPIO->BSRR |= (0x01 << GPIO_pin);
 }
 
 
+/**
+* On cherche a reset la valeur du GPIO sur la bonne pin donc on utilise le registre BRR
+*/
 void ourGPIO_Reset(ourGPIO_struct * GPIOStructPtr, char GPIO_pin){
 	GPIOStructPtr->GPIO->BRR |= (0x01 << GPIO_pin);
 }
 
+/**
+* On cherche a inverser la valeur du GPIO sur la bonne pin donc on utilise le registre BSRR
+*/
 void ourGPIO_Toggle(ourGPIO_struct * GPIOStructPtr, char GPIO_pin){
 	GPIOStructPtr->GPIO->BRR ^= (0x01 << GPIO_pin);
 }
